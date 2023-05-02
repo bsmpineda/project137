@@ -5,7 +5,7 @@ public class Frog {
 	public static int x;
 	public static int y;
 	public static Image image = new Image("images/frog.png", Frog.FROG_WIDTH, Frog.FROG_WIDTH, false, false);
-	private final static int FROG_WIDTH = 100;
+	private final static int FROG_WIDTH = 70;
 
     public Frog(int x, int y) {
         this.x = x;

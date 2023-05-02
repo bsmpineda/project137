@@ -5,6 +5,7 @@ import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -17,7 +18,7 @@ public class GameTimer extends AnimationTimer {
     GameTimer(GraphicsContext gc, Scene theScene) {
         this.gc = gc;
         this.theScene = theScene;
-        this.player = new Frog(0,50);
+        this.player = new Frog(0,210);
         this.spaceIsOnPressed = false;
         // call method to handle mouse click event
         this.handleKeyPressEvent();
@@ -27,7 +28,10 @@ public class GameTimer extends AnimationTimer {
     @Override
     public void handle(long arg0) {
     	this.gc.clearRect(0, 0, GameStage.WINDOW_WIDTH,GameStage.WINDOW_HEIGHT); //clear bg
+    	Image bg = new Image("images/pond.png");
+        this.gc.drawImage(bg, 0, 0);
     	this.player.render(gc); //show the frog
+    	
     }
 
     // method that will listen and handle the key press events

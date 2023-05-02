@@ -1,4 +1,6 @@
 
+import java.io.File;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -9,6 +11,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -55,8 +58,9 @@ public class GameStage {
         Canvas canvas = new Canvas(GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
         GraphicsContext gc = canvas.getGraphicsContext2D();
 
-        // Image bg = new Image("images/MS.png");
-        // gc.drawImage(bg, 0, 0);
+        Image bg = new Image("images/MS.gif");
+        gc.drawImage(bg, 0, 0);
+       
         return canvas;
     }
 
@@ -114,12 +118,15 @@ public class GameStage {
     // called when START GAME BUTTON is clicked
     // set the gameSage
     void setGame(Stage stage) {
+    	
         stage.setScene(this.scene);
-
+        Canvas canvas = new Canvas(GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
+        
         GraphicsContext gc = this.canvas.getGraphicsContext2D();
-
-         GameTimer gameTimer = new GameTimer(gc, scene);
-         gameTimer.start();
+        
+      
+        GameTimer gameTimer = new GameTimer(gc, scene);
+        gameTimer.start();
 
     }
 
@@ -134,8 +141,9 @@ public class GameStage {
          * ADD IMAGE FOR INSTRUCTION
          */
 
-        // Image bg = new Image("images/Instructions.png");
-        // gc.drawImage(bg, 0, 0);
+        Image bg = new Image("images/instructions.png");
+        gc.drawImage(bg, 0, 0);
+      
 
         StackPane root = new StackPane();
 
@@ -166,11 +174,11 @@ public class GameStage {
     // set the ABOUT scene
     void setAbt(Stage stage) {
         stage.setScene(this.scene);
-        Canvas canvas = new Canvas(GameStage.WINDOW_WIDTH, 800);
+        Canvas canvas = new Canvas(GameStage.WINDOW_WIDTH, GameStage.WINDOW_HEIGHT);
         GraphicsContext gc = canvas.getGraphicsContext2D();
         stage.setTitle("About");
-        // Image bg = new Image("images/About.png");
-        // gc.drawImage(bg, 0, 0);
+        Image bg = new Image("images/about.png");
+        gc.drawImage(bg, 0, 0);
         /**
          * ADD IMAGE FOR ABOUT
          */
