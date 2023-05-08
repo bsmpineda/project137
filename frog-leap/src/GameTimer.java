@@ -28,10 +28,13 @@ public class GameTimer extends AnimationTimer {
     @Override
     public void handle(long arg0) {
     	this.gc.clearRect(0, 0, GameStage.WINDOW_WIDTH,GameStage.WINDOW_HEIGHT); //clear bg
+
     	Image bg = new Image("images/pond.png");
+
         this.gc.drawImage(bg, 0, 0);
+        this.player.jump();
     	this.player.render(gc); //show the frog
-    	
+
     }
 
     // method that will listen and handle the key press events
