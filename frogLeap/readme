@@ -1,0 +1,20 @@
+Example Program for CMSC 137 Project
+
+A. Run the Server
+ 	
+ 		>java -jar circlewars-server.jar 2
+ 		
+
+B. Run the Clients (Number of clients is based on the parameter passed in server)
+		
+		>java -jar circlewars-client.jar localhost jach
+
+C. Enjoy coding.
+
+
+jachermocilla@gmail.com
+
+
+
+
+
