@@ -108,7 +108,13 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 		chatInput.addKeyListener(new KeyAdapter(){
 			public void keyPressed(KeyEvent ke){
 				if(ke.getKeyCode()==KeyEvent.VK_ENTER){
-					send("CHAT~`~"+name+"~`~"+chatInput.getText());
+					if(!(chatInput.getText().equals(""))){
+						send("CHAT~`~"+name+"~`~"+chatInput.getText());
+
+					}
+					chatInput.setText("Chat here...");
+					frame.requestFocusInWindow();
+				}else if(ke.getKeyCode()==KeyEvent.VK_ESCAPE){
 					chatInput.setText("Chat here...");
 					frame.requestFocusInWindow();
 				}
