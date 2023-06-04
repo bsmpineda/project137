@@ -186,6 +186,7 @@ public class GameServer implements Runnable, Constants{
 			//}
 		
 			// process
+
 			switch(gameStage){
 				  case WAITING_FOR_PLAYERS:
 						//System.out.println("Game State: Waiting for players...");
@@ -200,6 +201,7 @@ public class GameServer implements Runnable, Constants{
 								gameStage=GAME_START;
 							}
 						}
+
 					  break;	
 				  case GAME_START:
 					  System.out.println("Game State: START");
@@ -278,7 +280,23 @@ public class GameServer implements Runnable, Constants{
 					  }
 					  break;
 					 
-				}				  
+				}
+				
+				if (playerData.startsWith("CLOSE")) {
+					String[] playerInfo = playerData.split(" ");					  
+					String pname =playerInfo[1];  	
+					// format: CHOICE <int> 
+					System.out.println(pname + " left");
+					NetPlayer player=(NetPlayer)game.getPlayers().get(pname);
+					game.getPlayers().remove(player);
+					broadcast("CHAT~`~SERVER~`~"+pname+" left the game...");
+					broadcast("CONNECTED");
+					playerCount--;
+					if(playerCount == 0){
+						System.exit(0);;
+					}
+					gameStage=WAITING_FOR_PLAYERS;
+				}
 		}
 	}
 	

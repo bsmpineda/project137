@@ -8,6 +8,8 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -40,9 +42,12 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 	/**
 	 * Player position, speed etc.
 	 */
-	int x=10,xspeed=50,yspeed=1,prevX,prevY;
+	int x=10,xspeed=10,yspeed=1,prevX,prevY;
+	private static final Color FINISH_LINE_COLOR = Color.RED;
 	int y = 30;
+	int frogSize = 80;
 	boolean isJump, isDown, winner, isF, isR = false;
+	boolean haveWinner = false;
 	/**
 	 * Game timer, handler receives data from server to update game state
 	 */
@@ -124,9 +129,9 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 						if (randomWord.equals(chatInput.getText().toUpperCase())) { // if the word matches the random word, leap forward
 							x+=randomWord.length()*3; // the movement is based on length of words
 							send("GET "+name+" "+chatInput.getText().toUpperCase()+" "+x+" "+y);
-						}else if (winner && chatInput.getText().equals("1")) { // 
+						}else if ((haveWinner ||winner) && chatInput.getText().equals("1")) { // 
 							send("RESTART");							
-						}else if (winner && chatInput.getText().equals("0")) { // 
+						}else if ((haveWinner ||winner) && chatInput.getText().equals("0")) { // 
 							send("EXIT");
 					}
 					chatInput.setText("Chat here...");
@@ -170,6 +175,7 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 		frame.setTitle(APP_NAME+":"+name);
 		//set some timeout for the socket
 		socket.setSoTimeout(100);
+		frame.setResizable(false);
 		
 		//Some gui stuff i hate.
 		frame.getContentPane().add(chatInput);
@@ -185,12 +191,13 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 		//create the buffer
 		offscreen=new BufferedImage(gameWidth, gameHeight, BufferedImage.TYPE_INT_ARGB);;
 		frog = ImageIO.read(getClass().getResourceAsStream("images/frog.png"));
-		bg =ImageIO.read(getClass().getResourceAsStream("images/pond.png"));
+		bg =ImageIO.read(getClass().getResourceAsStream("images/bg.png"));
 		initBG = ImageIO.read(getClass().getResourceAsStream("images/matching_screen.jpg"));
 
 		//Some gui stuff again...
 		frame.addMouseMotionListener(new MouseMotionHandler());
 		frame.addKeyListener(new KeyHandler());		
+		frame.addWindowListener(new WindowHandaler());
 		
 
 		//tiime to play
@@ -239,12 +246,17 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 				connected=true;
 				System.out.println("Connected.");
 				//start = true;
+				wordArea.setText("");
 				offscreen.getGraphics().drawImage(initBG, 0, 0, gameWidth, gameHeight, getBackground(), frame);
 				//show the changes
 				frame.repaint();
 			}else if (!connected){
 				System.out.println("Connecting..");				
 				send("CONNECT "+name);
+				offscreen.getGraphics().clearRect(0, 0, gameWidth, gameHeight);
+				offscreen.getGraphics().drawImage(initBG, 0, 0, gameWidth, gameHeight, getBackground(), frame);
+				//show the changes
+				frame.repaint();
 			}else if (connected){
 
 				//To show the sprites even if the space key was not clicked
@@ -259,7 +271,7 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 					
 					// resetting all the values
 					this.x=10;
-					this.xspeed=50;
+					this.xspeed=10;
 					this.winner = false;
 					send("PLAYER "+name+" "+this.x+" "+y); // x = 10 and y = 30 as initial starting point
 					//start = false;
@@ -268,7 +280,7 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 				if (serverData.startsWith("PLAYER")){
 					offscreen.getGraphics().clearRect(0, 0, gameWidth, gameHeight);
 					offscreen.getGraphics().drawImage(bg, 0, 0, gameWidth, gameHeight, getBackground(), frame);
-
+					frame.repaint();
 					String[] playersInfo = serverData.split(":");
 					for (int i=0;i<playersInfo.length;i++){
 						//System.out.println(playersInfo.length);
@@ -277,19 +289,24 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 						int playerX = Integer.parseInt(playerInfo[2]);
 						int playerY = Integer.parseInt(playerInfo[3])*((2*i+6));
 						//draw on the offscreen image	
-						offscreen.getGraphics().drawImage(frog, playerX, playerY, 80, 80, frame); //draw the frog
+						offscreen.getGraphics().drawImage(frog, playerX, playerY, frogSize, frogSize, frame); //draw the frog
 						offscreen.getGraphics().drawString(pname,playerX+30,
 						playerY+65);					
 					}
 					//show the changes
 					frame.repaint();
 				}else if(serverData.startsWith("CHAT")){
-					
 					String[] chatInfo = serverData.split("~`~");
 					if(chatInfo[1].equals(name)){
 						chatArea.append("[YOU] : "+chatInfo[2]+"\n");
 						
-					}else{
+					
+					}
+					else if(chatInfo[1].equals("SERVER")){
+						chatArea.append("<<--- "+chatInfo[2]+" --->>\n");
+						connected = false;
+					}
+					else{
 						chatArea.append("["+chatInfo[1]+"] : "+chatInfo[2]+"\n");
 					}
 
@@ -303,6 +320,7 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 					
 				}else if(serverData.startsWith("RESET")){
 					// Format : RESET + <RESET_TOKEN> + <pname>
+					haveWinner = false;
 					chatArea.setText("");
 					wordArea.setText("");
 					String[] chatInfo = serverData.split(" ");
@@ -315,10 +333,12 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 					 chatArea.setFont(font);
 					 chatArea.setForeground(Color.BLUE);
 					String[] chatInfo = serverData.split(" ");
+					wordArea.setText(chatInfo[1]+" WINS!!");
 					chatArea.append(chatInfo[1]+" won the game!"+"\n");
 					chatArea.append(chatInfo[1]+"\n");
 					chatArea.append("TYPE 1 to restart the game"+"\n");
 					chatArea.append("TYPE 2 to exit the game\n");
+					haveWinner = true;
 				}else if (serverData.startsWith("END")) {
 					xspeed = 0;
 					yspeed = 0;
@@ -333,7 +353,6 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 	 */
 	public void paintComponent(Graphics g){
 		// Set the font color
-         // Set the font color
 		 g.setColor(Color.WHITE);
         
 		 // Set the font
@@ -343,6 +362,12 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 		g.drawImage(offscreen, 0, 0, null);
 		
 	}
+
+	private void sendNotification() {
+		System.out.println("Client exited");
+        System.exit(0);
+        socket.close();
+    }
 	
 	class MouseMotionHandler extends MouseMotionAdapter{
 		public void mouseMoved(MouseEvent me){
@@ -358,12 +383,20 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 		}
 	}
 	
+	class WindowHandaler extends WindowAdapter{
+		public void windowClosing(WindowEvent we) {
+			System.out.println("GUI closed");
+			send("CLOSE "+name);
+			System.out.close();
+			socket.close();
+		}
+	}
 
 	class KeyHandler extends KeyAdapter{
 		public void keyPressed(KeyEvent ke){
 			switch (ke.getKeyCode()){
 			case KeyEvent.VK_LEFT:
-				if (!isJump) {
+				if (!isJump && !haveWinner) {
 					x+=xspeed;
 					y-=yspeed;
 					send("PLAYER "+name+" "+x+" "+y);
@@ -383,7 +416,7 @@ public class FrogLeap extends JPanel implements Runnable, Constants{
 				chatInput.requestFocusInWindow();
 				break;
 			}
-			if (x>=gameWidth-80) { //determiner if someone wins
+			if (x>=gameWidth-frogSize-60) { //determiner if someone wins
 				xspeed = 0;
 				send("WIN "+name);
 				winner = true;
